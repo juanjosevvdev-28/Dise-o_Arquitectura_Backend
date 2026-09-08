@@ -5,15 +5,16 @@
   "type": "module",
   "license": "ISC",
   "author": "",
-  "main": "index.js",
+  "main": "src/server.js",
   "scripts": {
-    "dev": "node --watch index.js",
-    "start": "node index.js"
+    "dev": "node --watch src/server.js",
+    "start": "node src/server.js"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
+    "mongodb": "^7.6.0",
     "mongoose": "^9.9.5"
   }
 }
