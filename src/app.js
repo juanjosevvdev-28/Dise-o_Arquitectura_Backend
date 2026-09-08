@@ -13,10 +13,12 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Conexión a MongoDB (Usando la variable de entorno de tu clúster)
-mongoose.connect(process.env.MONGO_URL)
-    .then(() => console.log('🍃 Conectado exitosamente a MongoDB'))
-    .catch(err => console.error('❌ Error conectando a MongoDB:', err));
+// Conexión Optimizada a MongoDB Atlas (Evita el bucle infinito)
+mongoose.connect(process.env.MONGO_URL, {
+    serverSelectionTimeoutMS: 5000, // Si en 5 segundos no conecta, aborta y lanza error
+})
+    .then(() => console.log('🍃 Conectado exitosamente a MongoDB Atlas'))
+    .catch(err => console.error('❌ Error crítico conectando a MongoDB:', err));
 
 // Endpoint de prueba: Health Check
 app.get('/api/health', (req, res) => {
