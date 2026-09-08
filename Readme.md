@@ -43,3 +43,22 @@ Este proyecto es el backend modularizado y estructurado por capas para una plata
 * `GET /api/health` -> Verifica si el servidor está activo de forma correcta.
 * `GET /api/events` -> Retorna la lista de eventos disponibles (actualmente vacía).
 * `GET /api/sessions/current` -> Endpoint base para la sesión del usuario.
+
+## 🔐 Pre-entrega 2: Registro seguro de usuarios (POST /api/sessions/register)
+
+El endpoint de registro recibe los datos del usuario, normaliza el email, hashea la contraseña de manera segura usando `bcrypt` y persiste el registro en MongoDB.
+
+### Estructura esperada del JSON (Body):
+```json
+{
+  "first_name": "Ana",
+  "last_name": "Pérez",
+  "email": "Ana@Mail.com ",
+  "password": "Secreta123"
+}
+```
+
+### Respuestas del Servidor:
+* **201 Created**: Registro exitoso. Devuelve el objeto del usuario normalizado y excluye por completo el campo `password`.
+* **400 Bad Request**: Faltan campos obligatorios o formato inválido.
+* **409 Conflict**: El correo electrónico ya se encuentra registrado en el sistema.
