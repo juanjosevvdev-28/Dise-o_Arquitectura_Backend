@@ -1,0 +1,17 @@
+{
+  "name": "diseno_arquitectura_backend",
+  "version": "1.0.0",
+  "description": "",
+  "type": "module",
+  "license": "ISC",
+  "author": "",
+  "main": "index.js",
+  "scripts": {
+  "dev": "node --watch index.js",
+  "start": "node index.js"
+},
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1"
+  }
+}
