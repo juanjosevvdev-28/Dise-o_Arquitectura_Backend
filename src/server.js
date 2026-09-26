@@ -1,11 +1,12 @@
 // server.js
 import app from './app.js';
 import dotenv from 'dotenv';
-import mo
+import mongoose from 'mongoose';
+
 dotenv.config();
 
-const P.env.PORT || 8080;
-const NODE_ENV = process.env.NODE_ENV || 'production';
+const PORT = process.env.PORT || 8080;
+const NODE_ENV = process.env.NODE_ENV || 'development';
 const MONGO_URL = process.env.MONGO_URL || 'mongodb://127.0.0.1:27017/eventos';
 
 async function startServer() {
