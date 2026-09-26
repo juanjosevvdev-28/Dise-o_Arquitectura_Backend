@@ -5,26 +5,17 @@ class SessionsController {
         try {
             const { first_name, last_name, email, password } = req.body;
 
-            // Validación de campos requeridos
-            if (!first_name || !last_name || !email || !password) {
-                return res.status(400).json({ status: "error", message: "Faltan campos obligatorios" });
-            }
-
-            // Validación básica de formato de email y longitud de password
-            if (!email.includes('@') || password.length < 6) {
-                return res.status(400).json({ status: "error", message: "Formato de email inválido o contraseña demasiado corta (mínimo 6 caracteres)" });
-            }
-
-            // Llamar al servicio
+            // Llamar al servicio (que ya valida y hashea)
             const result = await SessionsService.register({ first_name, last_name, email, password });
 
-            // Respuesta exitosa (Ya viene formateada sin la contraseña)
-            return res.status(201).json({ status: "success", payload: result });
+            // Respuesta exitosa (Ya viene sin la contraseña)
+            return res.status(201).json({ status: 'success', payload: result });
 
         } catch (error) {
             // Capturar errores de negocio (como el email duplicado 409)
             const status = error.statusCode || 500;
-            return res.status(status).json({ status: "error", message: error.message });
+            const message = error.message || 'Error en el servidor';
+            return res.status(status).json({ status: 'error', message });
         }
     }
 
@@ -32,41 +23,58 @@ class SessionsController {
         try {
             const { email, password } = req.body;
 
+            // Validación básica
             if (!email || !password) {
                 return res.status(401).json({ status: 'error', message: 'Credenciales inválidas' });
             }
 
+            // Llamar al servicio
             const result = await SessionsService.login(email, password);
 
+            // Si login falla, retornar mensaje genérico
             if (!result) {
                 return res.status(401).json({ status: 'error', message: 'Credenciales inválidas' });
             }
 
+            // Guardar token en cookie
             res.cookie('currentUser', result.token, {
                 httpOnly: true,
                 sameSite: 'lax',
-                maxAge: 3600000,
+                maxAge: 3600000, // 1 hora
                 secure: process.env.NODE_ENV === 'production'
             });
 
             return res.status(200).json({ status: 'success', message: 'Login correcto' });
-        } catch {
+
+        } catch (error) {
+            console.error('Error en login:', error);
             return res.status(401).json({ status: 'error', message: 'Credenciales inválidas' });
         }
     }
 
     current(req, res) {
-        return res.status(200).json({ status: 'success', payload: req.user });
+        try {
+            // El middleware auth ya pasó y asignó req.user
+            return res.status(200).json({ status: 'success', payload: req.user });
+        } catch (error) {
+            console.error('Error obteniendo usuario actual:', error);
+            return res.status(500).json({ status: 'error', message: 'Error en el servidor' });
+        }
     }
 
     logout(req, res) {
-        res.clearCookie('currentUser', {
-            httpOnly: true,
-            sameSite: 'lax',
-            secure: process.env.NODE_ENV === 'production'
-        });
+        try {
+            res.clearCookie('currentUser', {
+                httpOnly: true,
+                sameSite: 'lax',
+                secure: process.env.NODE_ENV === 'production'
+            });
 
-        return res.status(200).json({ status: 'success', message: 'Sesión cerrada' });
+            return res.status(200).json({ status: 'success', message: 'Sesión cerrada' });
+        } catch (error) {
+            console.error('Error en logout:', error);
+            return res.status(500).json({ status: 'error', message: 'Error en el servidor' });
+        }
     }
 }
 

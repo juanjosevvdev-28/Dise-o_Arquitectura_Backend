@@ -1,12 +1,22 @@
 import bcrypt from 'bcrypt';
 
+const SALT_ROUNDS = 10;
+
 // Hashear contraseña (se usa en el registro)
 export const createHash = async (password) => {
-    const salts = await bcrypt.genSalt(10);
-    return bcrypt.hash(password, salts);
+    try {
+        const salts = await bcrypt.genSalt(SALT_ROUNDS);
+        return await bcrypt.hash(password, salts);
+    } catch (error) {
+        throw new Error(`Error al hashear la contraseña: ${error.message}`);
+    }
 };
 
-// Validar contraseña (se usará en el login más adelante)
+// Validar contraseña (se usará en el login)
 export const isValidPassword = async (password, hashedPassword) => {
-    return bcrypt.compare(password, hashedPassword);
+    try {
+        return await bcrypt.compare(password, hashedPassword);
+    } catch (error) {
+        throw new Error(`Error al comparar contraseñas: ${error.message}`);
+    }
 };

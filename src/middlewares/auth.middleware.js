@@ -8,9 +8,14 @@ export const auth = (req, res, next) => {
     }
 
     try {
-        req.user = verifyToken(token);
+        const decoded = verifyToken(token);
+        req.user = {
+            id: decoded.id,
+            email: decoded.email,
+            role: decoded.role
+        };
         next();
-    } catch {
+    } catch (error) {
         return res.status(401).json({ status: 'error', message: 'No autenticado' });
     }
 };

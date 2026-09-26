@@ -1,27 +1,46 @@
 import { Schema, model } from 'mongoose';
 
-// Representación del esquema base para un Usuario en etapas posteriores
-export const UserSchema = {
-    firstName: String,
-    lastName: String,
-    email: String,
-    password: String, // Se guardará encriptada posteriormente
-    role: String      // ej: 'admin', 'user'
+const userSchema = new Schema(
+    {
+        first_name: {
+            type: String,
+            required: [true, 'El nombre es obligatorio'],
+            trim: true
+        },
+        last_name: {
+            type: String,
+            required: [true, 'El apellido es obligatorio'],
+            trim: true
+        },
+        email: {
+            type: String,
+            required: [true, 'El email es obligatorio'],
+            unique: true,
+            lowercase: true,
+            trim: true,
+            match: [/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/, 'El email no es válido']
+        },
+        password: {
+            type: String,
+            required: [true, 'La contraseña es obligatoria'],
+            select: false // No devolver password por defecto
+        },
+        role: {
+            type: String,
+            enum: ['user', 'admin'],
+            default: 'user'
+        }
+    },
+    {
+        timestamps: true
+    }
+);
+
+// Nunca devolver password en toJSON
+userSchema.methods.toJSON = function () {
+    const obj = this.toObject();
+    delete obj.password;
+    return obj;
 };
 
-const userSchema = new Schema({
-    first_name: { type: String, required: true },
-    last_name: { type: String, required: true },
-    email: { type: String, required: true, unique: true },
-    password: { type: String, required: true },
-    role: {
-        type: String,
-        enum: ['user', 'organizer', 'admin'],
-        default: 'user'
-    }
-}, {
-    timestamps: true // Guarda la fecha de creación automáticamente
-});
-
 export const UserModel = model('User', userSchema);
-
