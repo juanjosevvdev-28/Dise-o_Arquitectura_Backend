@@ -10,8 +10,8 @@ class UsersRepository {
   }
 
   async createUser(userData) {
-    const userCreated = await UsersDAO.create(userData);
-    return userCreated.toJSON();
+    // DAO ya retorna sin password
+    return await UsersDAO.create(userData);
   }
 }
 
