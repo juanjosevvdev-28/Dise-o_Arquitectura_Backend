@@ -4,13 +4,14 @@ import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const dataDir = path.join(__dirname, '..', 'data');
+const dataDir = path.join(__dirname, '..', '..', 'data');
 const usersFile = path.join(dataDir, 'users.json');
 
 const ensureStore = () => {
   if (!fs.existsSync(dataDir)) {
     fs.mkdirSync(dataDir, { recursive: true });
   }
+
   if (!fs.existsSync(usersFile)) {
     fs.writeFileSync(usersFile, JSON.stringify([], null, 2), 'utf8');
   }
@@ -29,15 +30,10 @@ const writeUsers = (users) => {
 
 const normalizeUser = (user) => ({
   ...user,
-  _id: user._id || user.id,
   toJSON() {
     const copy = { ...this };
     delete copy.password;
     return copy;
-  },
-  select(fields) {
-    if (!fields) return this;
-    return this;
   },
 });
 
@@ -63,9 +59,8 @@ export const UserModel = {
 
   async create(userData) {
     const users = readUsers();
-    const id = cryptoRandomId();
     const newUser = normalizeUser({
-      _id: id,
+      _id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
       first_name: userData.first_name,
       last_name: userData.last_name,
       email: userData.email,
@@ -80,7 +75,3 @@ export const UserModel = {
     return newUser;
   },
 };
-
-function cryptoRandomId() {
-  return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
-}

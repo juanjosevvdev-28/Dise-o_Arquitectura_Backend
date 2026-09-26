@@ -1,24 +1,18 @@
 import UsersDAO from '../dao/users.dao.js';
 
 class UsersRepository {
-    // Obtener usuario por email (incluye password para validar login)
-    async getUserByEmail(email) {
-        const user = await UsersDAO.getByEmail(email);
-        return user;
-    }
+  async getUserByEmail(email) {
+    return await UsersDAO.getByEmail(email);
+  }
 
-    // Obtener usuario por ID (sin password)
-    async getUserById(id) {
-        const user = await UsersDAO.getById(id);
-        return user;
-    }
+  async getUserById(id) {
+    return await UsersDAO.getById(id);
+  }
 
-    // Crear nuevo usuario - retorna sin password
-    async createUser(userData) {
-        const userCreated = await UsersDAO.create(userData);
-        // Usar toJSON del schema para excluir password
-        return userCreated.toJSON();
-    }
+  async createUser(userData) {
+    const userCreated = await UsersDAO.create(userData);
+    return userCreated.toJSON();
+  }
 }
 
 export default new UsersRepository();
