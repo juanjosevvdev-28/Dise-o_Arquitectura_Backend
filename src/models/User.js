@@ -1,46 +1,86 @@
-import { Schema, model } from 'mongoose';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
-const userSchema = new Schema(
-    {
-        first_name: {
-            type: String,
-            required: [true, 'El nombre es obligatorio'],
-            trim: true
-        },
-        last_name: {
-            type: String,
-            required: [true, 'El apellido es obligatorio'],
-            trim: true
-        },
-        email: {
-            type: String,
-            required: [true, 'El email es obligatorio'],
-            unique: true,
-            lowercase: true,
-            trim: true,
-            match: [/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/, 'El email no es válido']
-        },
-        password: {
-            type: String,
-            required: [true, 'La contraseña es obligatoria'],
-            select: false // No devolver password por defecto
-        },
-        role: {
-            type: String,
-            enum: ['user', 'admin'],
-            default: 'user'
-        }
-    },
-    {
-        timestamps: true
-    }
-);
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const dataDir = path.join(__dirname, '..', 'data');
+const usersFile = path.join(dataDir, 'users.json');
 
-// Nunca devolver password en toJSON
-userSchema.methods.toJSON = function () {
-    const obj = this.toObject();
-    delete obj.password;
-    return obj;
+const ensureStore = () => {
+  if (!fs.existsSync(dataDir)) {
+    fs.mkdirSync(dataDir, { recursive: true });
+  }
+  if (!fs.existsSync(usersFile)) {
+    fs.writeFileSync(usersFile, JSON.stringify([], null, 2), 'utf8');
+  }
 };
 
-export const UserModel = model('User', userSchema);
+const readUsers = () => {
+  ensureStore();
+  const data = fs.readFileSync(usersFile, 'utf8');
+  return JSON.parse(data || '[]');
+};
+
+const writeUsers = (users) => {
+  ensureStore();
+  fs.writeFileSync(usersFile, JSON.stringify(users, null, 2), 'utf8');
+};
+
+const normalizeUser = (user) => ({
+  ...user,
+  _id: user._id || user.id,
+  toJSON() {
+    const copy = { ...this };
+    delete copy.password;
+    return copy;
+  },
+  select(fields) {
+    if (!fields) return this;
+    return this;
+  },
+});
+
+export const UserModel = {
+  async findOne(query = {}) {
+    const users = readUsers();
+    const found = users.find((user) => {
+      if (query.email) return user.email === query.email;
+      if (query._id) return user._id === query._id;
+      return false;
+    });
+
+    if (!found) return null;
+    return normalizeUser(found);
+  },
+
+  async findById(id) {
+    const users = readUsers();
+    const found = users.find((user) => user._id === id);
+    if (!found) return null;
+    return normalizeUser(found);
+  },
+
+  async create(userData) {
+    const users = readUsers();
+    const id = cryptoRandomId();
+    const newUser = normalizeUser({
+      _id: id,
+      first_name: userData.first_name,
+      last_name: userData.last_name,
+      email: userData.email,
+      password: userData.password,
+      role: userData.role || 'user',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    });
+
+    users.push(newUser);
+    writeUsers(users);
+    return newUser;
+  },
+};
+
+function cryptoRandomId() {
+  return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+}
