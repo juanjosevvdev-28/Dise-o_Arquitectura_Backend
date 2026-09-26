@@ -62,3 +62,75 @@ El endpoint de registro recibe los datos del usuario, normaliza el email, hashea
 * **201 Created**: Registro exitoso. Devuelve el objeto del usuario normalizado y excluye por completo el campo `password`.
 * **400 Bad Request**: Faltan campos obligatorios o formato inválido.
 * **409 Conflict**: El correo electrónico ya se encuentra registrado en el sistema.
+
+## Autenticación JWT
+
+Todas las rutas de sesión usan el prefijo `/api/sessions`.
+
+| Método | Ruta | Descripción |
+|---|---|---|
+| POST | `/register` | Registra un usuario y hashea su contraseña. |
+| POST | `/login` | Valida credenciales y guarda el JWT en la cookie HTTP only `currentUser`. |
+| GET | `/current` | Devuelve el usuario autenticado; requiere la cookie `currentUser`. |
+| POST | `/logout` | Elimina la cookie de autenticación. |
+
+### Login
+
+Request:
+
+```json
+{
+  "email": "ana@mail.com",
+  "password": "Secreta123"
+}
+```
+
+Respuesta exitosa (`200`), además de la cookie `currentUser`:
+
+```json
+{
+  "status": "success",
+  "message": "Login correcto"
+}
+```
+
+Las credenciales inválidas responden siempre `401`:
+
+```json
+{
+  "status": "error",
+  "message": "Credenciales inválidas"
+}
+```
+
+### Usuario actual
+
+`GET /api/sessions/current` con la cookie devuelve:
+
+```json
+{
+  "status": "success",
+  "payload": {
+    "id": "665f2a...",
+    "email": "ana@mail.com",
+    "role": "user"
+  }
+}
+```
+
+Sin cookie, o con un token inválido o expirado, responde `401` con `No autenticado`.
+
+### Logout
+
+`POST /api/sessions/logout` responde:
+
+```json
+{
+  "status": "success",
+  "message": "Sesión cerrada"
+}
+```
+
+### Variables de entorno
+
+Configura `PORT`, `MONGO_URL`, `JWT_SECRET`, `JWT_EXPIRES_IN` y `NODE_ENV` en `.env`. Usa `.env.example` como referencia y no subas `.env` al repositorio.

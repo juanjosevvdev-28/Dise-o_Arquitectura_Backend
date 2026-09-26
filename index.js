@@ -1,7 +1,7 @@
 import express from "express";
 
 const app = express();
-const PORT = 3000;
+const PORT = 8080;
 
 app.get("/", (req, res) => {
     res.send("Servidor funcionando 🚀");
@@ -9,4 +9,4 @@ app.get("/", (req, res) => {
 
 app.listen(PORT, () => {
     console.log(`Servidor ejecutándose en http://localhost:${PORT}`);
-}); ñ
+}); 

@@ -1,32 +1,24 @@
+// app.js
 import express from 'express';
-import dotenv from 'dotenv';
-import mongoose from 'mongoose';
-import eventsRouter from './routes/events.router.js';
+import cookieParser from 'cookie-parser';
+// 1. Descomenta los enrutadores e importa el archivo correcto de sesiones
+// (Asegúrate de poner la ruta de archivo relativa correcta a tu proyecto)
 import sessionsRouter from './routes/sessions.router.js';
-
-// Cargar variables de entorno
-dotenv.config();
+// import eventsRouter from './routes/events.js'; // Descoméntalo cuando lo uses
 
 const app = express();
 
-// Middlewares globales requeridos
+// Middlewares esenciales para leer JSON en peticiones POST
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 
-// Conexión Optimizada a MongoDB Atlas (Evita el bucle infinito)
-mongoose.connect(process.env.MONGO_URL, {
-    serverSelectionTimeoutMS: 5000, // Si en 5 segundos no conecta, aborta y lanza error
-})
-    .then(() => console.log('🍃 Conectado exitosamente a MongoDB Atlas'))
-    .catch(err => console.error('❌ Error crítico conectando a MongoDB:', err));
-
-// Endpoint de prueba: Health Check
-app.get('/api/health', (req, res) => {
-    res.status(200).json({ status: "ok", message: "Servidor activo" });
+app.get("/", (req, res) => {
+    res.send("Servidor funcionando 🚀");
 });
 
-// Enlazar los enrutadores de los recursos
-app.use('/api/events', eventsRouter);
+// 2. Descomenta el enrutador de sesiones para enlazarlo a la API
 app.use('/api/sessions', sessionsRouter);
+// app.use('/api/events', eventsRouter); // Descoméntalo cuando lo uses
 
 export default app;

@@ -1,5 +1,6 @@
 import UsersRepository from '../repositories/users.repository.js';
-import { createHash } from '../utils/hash.js';
+import { createHash, isValidPassword } from '../utils/hash.js';
+import { generateToken } from '../utils/jwt.js';
 
 class SessionsService {
     async register(userData) {
@@ -29,6 +30,23 @@ class SessionsService {
         });
 
         return newUser;
+    }
+
+    async login(email, password) {
+        const normalizedEmail = email.trim().toLowerCase();
+        const user = await UsersRepository.getUserByEmail(normalizedEmail);
+
+        if (!user || !(await isValidPassword(password, user.password))) {
+            return null;
+        }
+
+        const userPayload = {
+            id: user._id.toString(),
+            email: user.email,
+            role: user.role
+        };
+
+        return { token: generateToken(userPayload), user: userPayload };
     }
 }
 
