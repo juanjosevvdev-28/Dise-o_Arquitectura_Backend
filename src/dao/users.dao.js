@@ -11,15 +11,18 @@ const readUsers = () => {
   if (!fs.existsSync(usersFile)) {
     return [];
   }
+
   const data = fs.readFileSync(usersFile, 'utf8');
   return JSON.parse(data || '[]');
 };
 
+const normalizeEmail = (email) => String(email || '').trim().toLowerCase();
+
 class UsersDAO {
-  // Devuelve el usuario CON password para poder comparar en login
   async getByEmail(email) {
     const users = readUsers();
-    const user = users.find((u) => u.email === email);
+    const normalizedEmail = normalizeEmail(email);
+    const user = users.find((u) => normalizeEmail(u.email) === normalizedEmail);
     return user || null;
   }
 
@@ -35,7 +38,7 @@ class UsersDAO {
       _id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
       first_name: userData.first_name,
       last_name: userData.last_name,
-      email: userData.email,
+      email: normalizeEmail(userData.email),
       password: userData.password,
       role: userData.role || 'user',
       createdAt: new Date().toISOString(),
@@ -44,8 +47,7 @@ class UsersDAO {
 
     users.push(newUser);
     fs.writeFileSync(usersFile, JSON.stringify(users, null, 2), 'utf8');
-    
-    // Retornar sin password para el registro
+
     const copy = { ...newUser };
     delete copy.password;
     return copy;
